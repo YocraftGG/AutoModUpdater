@@ -175,18 +175,22 @@ def get_mod(file_name, mods_folder):
 
 def get_mods(mods_folder):
     mods = []
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(get_mod, file_name, mods_folder) for file_name in os.listdir(mods_folder)]
-        for future in concurrent.futures.as_completed(futures):
-            if future.result() is None:
-                continue
-            mod = dict(future.result())
-            print(f"===={mod["title"]}====")
-            print("Current version name:", mod["version"])
-            print("Latest version name:", mod["latest_version"]["version_number"])
-            print(mod["latest_version"])
-            mods.append(mod)
-    return mods
+    try:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [executor.submit(get_mod, file_name, mods_folder) for file_name in os.listdir(mods_folder)]
+            for future in concurrent.futures.as_completed(futures):
+                if future.result() is None:
+                    continue
+                mod = dict(future.result())
+                print(f"===={mod["title"]}====")
+                print("Current version name:", mod["version"])
+                print("Latest version name:", mod["latest_version"]["version_number"])
+                print(mod["latest_version"])
+                mods.append(mod)
+        return mods
+    except FileNotFoundError:
+        os.mkdir(mods_folder)
+        return []
 
 def main():
     app = QApplication(sys.argv)
